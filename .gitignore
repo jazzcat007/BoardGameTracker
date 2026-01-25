@@ -643,3 +643,7 @@ AI_AGENT_CODING_CONSTITUTION.md
 
 ### Local VS Code user settings (should not be in repo)
 %APPDATA%/
+
+### Local/remote deployment scripts (do not track)
+OMV800_*
+deploy-to-omv800.sh
