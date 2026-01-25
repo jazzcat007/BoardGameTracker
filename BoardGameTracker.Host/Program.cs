@@ -133,6 +133,7 @@ if (!app.Environment.IsDevelopment())
     var spaIndex = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html");
     if (File.Exists(spaIndex))
     {
+        // Only fallback to SPA for non-API routes
         app.MapFallbackToFile("index.html");
     }
     else
