@@ -1,102 +1,174 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bars } from 'react-loading-icons';
 
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
-import { BgtSelect } from '@/components/BgtForm/BgtSelect';
-import { BgtInputField } from '@/components/BgtForm/BgtInputField';
-import { BgtPlayerSelector } from '@/components/BgtForm/BgtPlayerSelector';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import { useToast } from '@/providers/BgtToastProvider';
 
-import { getTemplatesByGame } from '@/services/ScoreSheetService';
-import { ScoreSheetTemplate } from '@/models/ScoreSheet';
-import { createRoundsTemplate, serializeTemplateDefinition } from '@/utils/scoreSheetUtils';
-import { createTemplate } from '@/services/ScoreSheetService';
+import {
+  getTemplatesByGame,
+  getAllTemplates,
+  createTemplate,
+  createSession,
+} from '@/services/ScoreSheetService';
+import { ScorePlayer, ScoreSessionData, ScoreSheetTemplate } from '@/models/ScoreSheet';
+import {
+  createRoundsTemplate,
+  serializeTemplateDefinition,
+  deserializeTemplateDefinition,
+  calculateTotals,
+} from '@/utils/scoreSheetUtils';
+import { getPlayers } from '@/hooks/services/playerService';
+import { Player } from '@/models';
 
 export const CreateScoreSessionPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
+  const [searchParams] = useSearchParams();
   const { showInfoToast, showErrorToast } = useToast();
 
   const [templates, setTemplates] = useState<ScoreSheetTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ScoreSheetTemplate | null>(null);
   const [sessionName, setSessionName] = useState('');
-  const [players, setPlayers] = useState<any[]>([]);
+  const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
+  const parsedGameId = useMemo(() => (gameId ? parseInt(gameId, 10) : undefined), [gameId]);
+  const templateIdFromQuery = useMemo(() => {
+    const value = searchParams.get('templateId');
+    return value ? parseInt(value, 10) : undefined;
+  }, [searchParams]);
+
   useEffect(() => {
+    const abortController = new AbortController();
+
     const loadTemplates = async () => {
       try {
-        if (gameId) {
-          const gameTemplates = await getTemplatesByGame(parseInt(gameId));
-          setTemplates(gameTemplates);
+        let fetchedTemplates = parsedGameId
+          ? await getTemplatesByGame(parsedGameId, abortController.signal)
+          : await getAllTemplates(abortController.signal);
 
-          // If no templates exist for this game, create a default rounds template
-          if (gameTemplates.length === 0) {
-            const defaultTemplate: Omit<ScoreSheetTemplate, 'id'> = {
-              name: 'Default Rounds Template',
-              description: 'Automatically created rounds template',
-              mode: 'rounds',
-              minPlayers: 2,
-              maxPlayers: 8,
-              version: '1.0',
-              jsonDefinition: serializeTemplateDefinition(createRoundsTemplate(5)),
-              gameId: parseInt(gameId),
-              isPublic: false,
-              createdByUserId: 'system', // In real app, use current user ID
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
+        if (fetchedTemplates.length === 0 && parsedGameId) {
+          const defaultTemplateDefinition = createRoundsTemplate(5);
+          const defaultTemplate: Omit<ScoreSheetTemplate, 'id'> = {
+            name: 'Default Rounds Template',
+            description: 'Automatically created rounds template',
+            mode: 'rounds',
+            minPlayers: 2,
+            maxPlayers: 8,
+            version: '1.0',
+            jsonDefinition: serializeTemplateDefinition(defaultTemplateDefinition),
+            gameId: parsedGameId,
+            isPublic: false,
+            createdByUserId: 'system',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
 
-            // TODO: Create the template via API
-            // const createdTemplate = await createTemplate(defaultTemplate);
-            // setTemplates([createdTemplate]);
+          try {
+            const createdTemplate = await createTemplate(defaultTemplate);
+            fetchedTemplates = [createdTemplate];
+            showInfoToast('Created a default rounds template for this game.');
+          } catch (error) {
+            console.error('Failed to auto-create default template:', error);
           }
         }
+
+        setTemplates(fetchedTemplates);
+
+        // Resolve selected template from query param if provided, otherwise use the first available.
+        const resolvedTemplate =
+          (templateIdFromQuery
+            ? fetchedTemplates.find((t) => t.id === templateIdFromQuery)
+            : null) || fetchedTemplates[0] || null;
+        setSelectedTemplate(resolvedTemplate);
+
+        const fetchedPlayers = await getPlayers(abortController.signal);
+        setAvailablePlayers(fetchedPlayers);
       } catch (error) {
-        console.error('Failed to load templates:', error);
-        showErrorToast('Failed to load score sheet templates');
+        console.error('Failed to load score sheet data:', error);
+        showErrorToast('Failed to load score sheet data');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadTemplates();
-  }, [gameId]);
+    return () => abortController.abort();
+  }, [parsedGameId, templateIdFromQuery, showErrorToast, showInfoToast]);
 
   const handleCreateSession = async () => {
-    if (!selectedTemplate || !sessionName) {
+    if (!selectedTemplate || !sessionName.trim()) {
       showErrorToast('Please select a template and provide a session name');
       return;
     }
 
+    if (
+      selectedPlayerIds.length < selectedTemplate.minPlayers ||
+      selectedPlayerIds.length > selectedTemplate.maxPlayers
+    ) {
+      showErrorToast(
+        `Select between ${selectedTemplate.minPlayers} and ${selectedTemplate.maxPlayers} players for this template.`
+      );
+      return;
+    }
+
+    const templateDefinition = deserializeTemplateDefinition(selectedTemplate.jsonDefinition);
+    const selectedPlayers = availablePlayers.filter((p) => selectedPlayerIds.includes(p.id));
+
+    const scorePlayers: ScorePlayer[] = selectedPlayers.map((player, index) => ({
+      id: player.id.toString(),
+      name: player.name,
+      order: index + 1,
+    }));
+
+    const fieldValues: Record<string, Record<string, any>> = {};
+    scorePlayers.forEach((player) => {
+      fieldValues[player.id] = {};
+      templateDefinition.fields.forEach((field) => {
+        const defaultValue =
+          field.defaultValue !== undefined
+            ? field.defaultValue
+            : field.type === 'number'
+              ? 0
+              : field.type === 'checkbox'
+                ? false
+                : '';
+        fieldValues[player.id][field.id] = defaultValue;
+      });
+    });
+
+    const sessionData: ScoreSessionData = {
+      players: scorePlayers,
+      fieldValues,
+      totals: calculateTotals(templateDefinition, fieldValues),
+    };
+
     setIsCreating(true);
     try {
-      const sessionData = {
-        name: sessionName,
+      const sessionPayload = {
+        name: sessionName.trim(),
         scoreSheetTemplateId: selectedTemplate.id!,
-        templateVersionSnapshot: selectedTemplate.version,
-        jsonData: JSON.stringify({
-          players: [],
-          fieldValues: {},
-          totals: {},
-        }),
-        gameId: gameId ? parseInt(gameId) : undefined,
+        templateVersionSnapshot: selectedTemplate.jsonDefinition,
+        jsonData: JSON.stringify(sessionData),
+        gameId: parsedGameId,
         createdByUserId: 'current-user-id', // Replace with actual user ID
+        createdAt: new Date(),
+        updatedAt: new Date(),
         notes: '',
         isCompleted: false,
       };
 
-      // TODO: Uncomment when createSession API is implemented
-      // const createdSession = await createSession(sessionData);
+      const createdSession = await createSession(sessionPayload);
       showInfoToast('Score session created successfully!');
-      navigate(`/score-sheets/${'new-session-id'}`); // Replace with actual ID
+      navigate(`/score-sheets/${createdSession.id}`);
     } catch (error) {
       console.error('Failed to create session:', error);
       showErrorToast('Failed to create score session');
@@ -156,6 +228,12 @@ export const CreateScoreSessionPage = () => {
                   </option>
                 ))}
               </select>
+              {selectedTemplate && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('score-sheets.create.players-range')}: {selectedTemplate.minPlayers}-
+                  {selectedTemplate.maxPlayers}
+                </p>
+              )}
             </div>
 
             {selectedTemplate && (
@@ -176,10 +254,34 @@ export const CreateScoreSessionPage = () => {
               <label className="text-[15px] font-medium leading-[35px] uppercase">
                 {t('score-sheets.create.players')}
               </label>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-sm text-gray-600">
-                  {t('score-sheets.create.players-note')}
-                </p>
+              <div className="bg-gray-50 p-3 rounded-lg flex flex-col gap-2">
+                {availablePlayers.length === 0 && (
+                  <p className="text-sm text-gray-600">{t('score-sheets.create.players-note')}</p>
+                )}
+                {availablePlayers.map((player) => (
+                  <label key={player.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedPlayerIds.includes(player.id)}
+                      onChange={() => {
+                        setSelectedPlayerIds((prev) =>
+                          prev.includes(player.id)
+                            ? prev.filter((id) => id !== player.id)
+                            : [...prev, player.id]
+                        );
+                      }}
+                      disabled={isCreating}
+                    />
+                    {player.name}
+                  </label>
+                ))}
+                {selectedTemplate && (
+                  <p className="text-xs text-gray-500">
+                    {t('score-sheets.create.players-note')} (
+                    {selectedTemplate.minPlayers}-{selectedTemplate.maxPlayers}{' '}
+                    {t('common.players')})
+                  </p>
+                )}
               </div>
             </div>
 
@@ -196,7 +298,13 @@ export const CreateScoreSessionPage = () => {
               </BgtButton>
               <BgtButton
                 type="button"
-                disabled={isCreating || !selectedTemplate || !sessionName || players.length === 0}
+                disabled={
+                  isCreating ||
+                  !selectedTemplate ||
+                  !sessionName.trim() ||
+                  selectedPlayerIds.length < (selectedTemplate?.minPlayers ?? 1) ||
+                  selectedPlayerIds.length > (selectedTemplate?.maxPlayers ?? Number.MAX_SAFE_INTEGER)
+                }
                 className="flex-1"
                 variant="soft"
                 onClick={handleCreateSession}
