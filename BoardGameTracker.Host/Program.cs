@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -92,8 +93,14 @@ builder.Services.AddSpaStaticFiles(configuration => {
 var app = builder.Build();
 CreateFolders(app.Services);
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseSpaStaticFiles();
+}
+
+app.UseStaticFiles();
 app.UseRouting();
-app.MapControllers();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -119,38 +126,23 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images/profile"
 });
 
-var logger = app.Services.GetService<ILogger<Program>>();
-logger.LogError("TEST");
-logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
-logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"));
-logger.LogError(app.Environment.IsDevelopment().ToString());
+app.MapControllers();
 
 if (!app.Environment.IsDevelopment())
 {
-    logger.LogError("PRODUCTION");
-    app.UseExceptionHandler("/Error");
-    app.UseSpaStaticFiles();
-    app.UseStaticFiles();
-    app.UseSpa(config => {
-        config.Options.SourcePath = "wwwroot";
-        config.Options.DefaultPageStaticFileOptions = new StaticFileOptions
-        {
-            OnPrepareResponse = ctx =>
-            {
-                var headers = ctx.Context.Response.GetTypedHeaders();
-                headers.CacheControl = new CacheControlHeaderValue
-                {
-                    NoCache = true,
-                    NoStore = true,
-                    MustRevalidate = true
-                };
-            }
-        };
-    });
+    var spaIndex = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html");
+    if (File.Exists(spaIndex))
+    {
+        app.MapFallbackToFile("index.html");
+    }
+    else
+    {
+        app.Logger.LogWarning("Skipping SPA fallback because {SpaIndex} does not exist", spaIndex);
+    }
 }
 
-SendStartApplicationCommand(app.Services);
 RunDbMigrations(app.Services);
+SendStartApplicationCommand(app.Services);
 
 await app.RunAsync();
 

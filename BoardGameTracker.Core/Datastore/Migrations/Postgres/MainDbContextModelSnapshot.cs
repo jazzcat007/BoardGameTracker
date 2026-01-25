@@ -402,6 +402,123 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("Sessions");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.ScoreSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ScoreSheetTemplateId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TemplateVersionSnapshot")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("JsonData")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ScoreSheetTemplateId");
+
+                    b.ToTable("ScoreSessions");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.ScoreSheetTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("JsonDefinition")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxPlayers")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinPlayers")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("ScoreSheetTemplates");
+                });
+
             modelBuilder.Entity("ExpansionSession", b =>
                 {
                     b.Property<int>("ExpansionsId")
@@ -536,6 +653,40 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Game");
 
                     b.Navigation("Location");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.ScoreSession", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BoardGameTracker.Common.Entities.ScoreSheetTemplate", "ScoreSheetTemplate")
+                        .WithMany()
+                        .HasForeignKey("ScoreSheetTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Game");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("ScoreSheetTemplate");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.ScoreSheetTemplate", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("ExpansionSession", b =>

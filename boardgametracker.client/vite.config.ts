@@ -12,12 +12,12 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:6554/',
+        target: 'http://localhost:5444',
         changeOrigin: true,
         secure: false,
       },
       '/images': {
-        target: 'http://localhost:6554/',
+        target: 'http://localhost:5444',
         changeOrigin: true,
         secure: false,
       },

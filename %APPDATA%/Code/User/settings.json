@@ -1,0 +1,49 @@
+{
+  "security.workspace.trust.untrustedFiles": "open",
+  "git.openRepositoryInParentFolders": "always",
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:PATH};${env:USERPROFILE}\\.ollama\\bin;${env:APPDATA}\\npm",
+    "OLLAMA_HOST": "127.0.0.1:11434",
+    "CLAUDE_API_BASE": "http://127.0.0.1:3456",
+    "CLAUDE_API_KEY": "bumble25"
+  },
+  "claudeCode.apiBaseUrl": "http://127.0.0.1:3456/v1",
+  "claudeCode.apiKey": "bumble25",
+  "claudeCode.forceLocal": true,
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": "off",
+    "strings": "on"
+  },
+  "security.allowedUNCHosts": ["OMV800"],
+  "git.enableSmartCommit": true,
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "claude-code-router"
+  },
+  "chat.mcp.autostart": "newAndOutdated",
+  "python.analysis.typeCheckingMode": "basic",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "explorer.confirmDelete": false,
+  "uetools.unrealEngineInstallationSearchPath": "C:\\Program Files\\Epic Games",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "clangd.path": "c:\\Users\\jazzc\\AppData\\Roaming\\Code\\User\\globalStorage\\llvm-vs-code-extensions.vscode-clangd\\install\\20.1.8\\clangd_20.1.8\\bin\\clangd.exe",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false
+  },
+  "chat.tools.global.autoApprove": true,
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true,
+    "C:\\Users\\jazzc\\.aitk\\instructions\\": true
+  },
+  "chat.agent.maxRequests": 4000,
+  "claudeCode.preferredLocation": "panel",
+  "dotnetAcquisitionExtension.sharedExistingDotnetPath": "C:\\Program Files\\dotnet\\dotnet.exe",
+  "dotnetAcquisitionExtension.allowInvalidPaths": true,
+  "workbench.colorTheme": "Visual Studio Dark - C++",
+  "claudeCode.selectedModel": "haiku",
+  "chat.viewSessions.orientation": "stacked",
+  "chatgpt.runCodexInWindowsSubsystemForLinux": true
+}

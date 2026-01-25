@@ -18,6 +18,8 @@ public class MainDbContext : DbContext
     public DbSet<Location> Locations { get; set; }
     public DbSet<Config> Config { get; set; }
     public DbSet<Language> Languages { get; set; }
+    public DbSet<ScoreSheetTemplate> ScoreSheetTemplates { get; set; }
+    public DbSet<ScoreSession> ScoreSessions { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -40,6 +42,7 @@ public class MainDbContext : DbContext
         BuildGame(builder);
         BuildGameSessions(builder);
         BuildPlayer(builder);
+        BuildScoreSheets(builder);
     }
 
     private void BuildIds(ModelBuilder builder)
@@ -131,7 +134,7 @@ public class MainDbContext : DbContext
         var languages = new []
         {
             new Language { Key = "en-us", TranslationKey = "english" },
-            new Language { Key = "nl-be", TranslationKey = "dutch" } 
+            new Language { Key = "nl-be", TranslationKey = "dutch" }
         };
 
         foreach (var language in languages)
@@ -143,5 +146,35 @@ public class MainDbContext : DbContext
             }
         }
         context.SaveChanges();
+    }
+
+    private static void BuildScoreSheets(ModelBuilder builder)
+    {
+        builder.Entity<ScoreSheetTemplate>()
+            .HasOne(x => x.Game)
+            .WithMany()
+            .HasForeignKey(x => x.GameId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ScoreSession>()
+            .HasOne(x => x.ScoreSheetTemplate)
+            .WithMany()
+            .HasForeignKey(x => x.ScoreSheetTemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ScoreSession>()
+            .HasOne(x => x.Game)
+            .WithMany()
+            .HasForeignKey(x => x.GameId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ScoreSession>()
+            .HasOne(x => x.Location)
+            .WithMany()
+            .HasForeignKey(x => x.LocationId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -39,13 +39,19 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<ILocationService, LocationService>();
         serviceCollection.AddTransient<IDashboardService, DashboardService>();
         serviceCollection.AddTransient<ILanguageService, LanguageService>();
-        
+
         serviceCollection.AddTransient<IGameRepository, GameRepository>();
         serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddTransient<ISessionRepository, SessionRepository>();
         serviceCollection.AddTransient<ILocationRepository, LocationRepository>();
         serviceCollection.AddTransient<IDashboardRepository, DashboardRepository>();
         serviceCollection.AddTransient<ILanguageRepository, LanguageRepository>();
+
+        // Score Sheet Services
+        serviceCollection.AddTransient<BoardGameTracker.Core.ScoreSheets.Interfaces.IScoreSheetTemplateService, BoardGameTracker.Core.ScoreSheets.ScoreSheetTemplateService>();
+        serviceCollection.AddTransient<BoardGameTracker.Core.ScoreSheets.Interfaces.IScoreSessionService, BoardGameTracker.Core.ScoreSheets.ScoreSessionService>();
+        serviceCollection.AddTransient<BoardGameTracker.Core.Datastore.Interfaces.IScoreSheetTemplateRepository, BoardGameTracker.Core.Datastore.ScoreSheetTemplateRepository>();
+        serviceCollection.AddTransient<BoardGameTracker.Core.Datastore.Interfaces.IScoreSessionRepository, BoardGameTracker.Core.Datastore.ScoreSessionRepository>();
 
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {

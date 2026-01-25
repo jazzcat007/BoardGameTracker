@@ -96,8 +96,12 @@ public class MapProfiles : Profile
         CreateMap<GameStateChart, GameStateChartViewModel>();
 
         CreateMap<Language, LanguageViewModel>();
+
+        // Score Sheet Mappings
+        CreateMap<ScoreSheetTemplate, ScoreSheetTemplateViewModel>().ReverseMap();
+        CreateMap<ScoreSession, ScoreSessionViewModel>().ReverseMap();
     }
-    
+
     private static bool IsPersonType(BggRawLink link)
     {
         var peopleTypes = new[] {Constants.Bgg.Artist, Constants.Bgg.Designer, Constants.Bgg.Publisher};

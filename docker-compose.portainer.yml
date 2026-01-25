@@ -1,12 +1,11 @@
 version: "3.8"
-
 services:
   boardgametracker:
     image: uping/boardgametracker:latest
     restart: unless-stopped
     volumes:
-      - <IMAGE_PATH>:/app/images
-      - <DATA_PATH>:/app/data
+      - /opt/boardgametracker/images:/app/images
+      - /opt/boardgametracker/data:/app/data
     ports:
       - "5444:5444"
     environment:
@@ -15,7 +14,7 @@ services:
       - DB_PASSWORD=CHANGEME
       - DB_NAME=boardgametracker
       - DB_PORT=5432
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +31,7 @@ services:
     image: postgres:17
     restart: unless-stopped
     volumes:
-      - <DB_PATH>:/var/lib/postgresql/data
+      - /opt/boardgametracker/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=boardgametracker
       - POSTGRES_USER=dev
@@ -51,3 +50,11 @@ services:
 networks:
   boardgametracker-network:
     driver: bridge
+
+volumes:
+  boardgametracker_images:
+    driver: local
+  boardgametracker_data:
+    driver: local
+  boardgametracker_db:
+    driver: local
