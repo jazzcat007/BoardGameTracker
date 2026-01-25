@@ -633,9 +633,13 @@ FodyWeavers.xsd
 BoardGameTracker.Host/images/cover/
 BoardGameTracker.Host/images/profile/
 
-### AI Agent Configuration ###
-# Agent-specific configuration files
+### AI agent docs (local only)
+AGENTS.md
+AI_AGENT_CODING_CONSTITUTION.md
 .claude/
 .cline/
 .codex/
 .copilot/
+
+### Local VS Code user settings (should not be in repo)
+%APPDATA%/

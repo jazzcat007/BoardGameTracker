@@ -111,6 +111,3 @@ You can also download the docker compose example [here](docker-compose.yml)
 # Tooling
 - This project is tested with BrowserStack.
 - Translations are managed with Crowdin
-
-## AI Agent Coding Constitution
-This project adheres to the [AI Agent Coding Constitution](AI_AGENT_CODING_CONSTITUTION.md), which governs ethical AI collaboration, maintainability standards, and human oversight for all AI-assisted development work.
