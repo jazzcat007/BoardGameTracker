@@ -7,6 +7,11 @@ RUN apt-get -y install nodejs
 FROM with-node AS publish
 WORKDIR /src
 COPY . .
+# Install and build frontend
+RUN npm ci --prefix boardgametracker.client
+RUN npm run build --prefix boardgametracker.client
+# Copy built frontend into Host wwwroot so SPA fallback works in production
+RUN rm -rf BoardGameTracker.Host/wwwroot && mkdir -p BoardGameTracker.Host/wwwroot && cp -r boardgametracker.client/dist/* BoardGameTracker.Host/wwwroot/
 RUN dotnet restore "./BoardGameTracker.Host/BoardGameTracker.Host.csproj"
 RUN dotnet publish "./BoardGameTracker.Host/BoardGameTracker.Host.csproj" -c Release -o /publish
 
