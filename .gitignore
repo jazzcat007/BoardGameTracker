@@ -645,10 +645,10 @@ AI_AGENT_CODING_CONSTITUTION.md
 %APPDATA%/
 
 ### Local/remote deployment scripts (do not track)
-OMV800_*
-deploy-to-omv800.sh
-deploy_to_omv800.sh
-deploy_to_omv800.ps1
+DEPLOY_HOST_*
+deploy-to-server.sh
+deploy_to_server.sh
+deploy_to_server.ps1
 SIMPLE_DEPLOYMENT_GUIDE.md
 DEPLOY_COMMANDS.md
 FINAL_DEPLOYMENT_INSTRUCTIONS.md
