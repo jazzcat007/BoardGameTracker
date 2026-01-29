@@ -25,6 +25,21 @@ public class ScoreSheetTemplateService : IScoreSheetTemplateService
 
     public async Task<ScoreSheetTemplate> Create(ScoreSheetTemplate template)
     {
+        if (template == null)
+            throw new ArgumentNullException(nameof(template));
+        
+        if (string.IsNullOrWhiteSpace(template.Name))
+            throw new ArgumentException("Template name is required", nameof(template));
+        
+        if (string.IsNullOrWhiteSpace(template.JsonDefinition))
+            throw new ArgumentException("Template JSON definition is required", nameof(template));
+        
+        if (template.MinPlayers < 1)
+            throw new ArgumentException("MinPlayers must be at least 1", nameof(template));
+        
+        if (template.MaxPlayers < template.MinPlayers)
+            throw new ArgumentException("MaxPlayers must be greater than or equal to MinPlayers", nameof(template));
+        
         template.CreatedAt = DateTime.UtcNow;
         template.UpdatedAt = DateTime.UtcNow;
         return await _repository.CreateAsync(template);
@@ -32,6 +47,24 @@ public class ScoreSheetTemplateService : IScoreSheetTemplateService
 
     public async Task<ScoreSheetTemplate> Update(ScoreSheetTemplate template)
     {
+        if (template == null)
+            throw new ArgumentNullException(nameof(template));
+        
+        if (template.Id == 0)
+            throw new ArgumentException("Template Id is required for update", nameof(template));
+        
+        if (string.IsNullOrWhiteSpace(template.Name))
+            throw new ArgumentException("Template name is required", nameof(template));
+        
+        if (string.IsNullOrWhiteSpace(template.JsonDefinition))
+            throw new ArgumentException("Template JSON definition is required", nameof(template));
+        
+        if (template.MinPlayers < 1)
+            throw new ArgumentException("MinPlayers must be at least 1", nameof(template));
+        
+        if (template.MaxPlayers < template.MinPlayers)
+            throw new ArgumentException("MaxPlayers must be greater than or equal to MinPlayers", nameof(template));
+        
         template.UpdatedAt = DateTime.UtcNow;
         return await _repository.UpdateAsync(template);
     }
