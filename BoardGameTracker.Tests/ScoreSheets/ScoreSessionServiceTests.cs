@@ -147,14 +147,46 @@ public class ScoreSessionServiceTests
     }
 
     [Fact]
-    public async Task CompleteSession_Should_Throw_Exception_When_Session_Not_Found()
+    public async Task Update_Should_Throw_ArgumentException_When_Name_Is_Empty()
+    {
+        // Arrange
+        var session = new ScoreSession
+        {
+            Id = 1,
+            Name = "",
+            ScoreSheetTemplateId = 1
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _service.Update(session));
+        exception.Message.Should().Contain("name");
+    }
+
+    [Fact]
+    public async Task Update_Should_Throw_ArgumentException_When_ScoreSheetTemplateId_Is_Zero()
+    {
+        // Arrange
+        var session = new ScoreSession
+        {
+            Id = 1,
+            Name = "Test Session",
+            ScoreSheetTemplateId = 0
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _service.Update(session));
+        exception.Message.Should().Contain("ScoreSheetTemplateId");
+    }
+
+    [Fact]
+    public async Task CompleteSession_Should_Throw_InvalidOperationException_When_Session_Not_Found()
     {
         // Arrange
         _mockRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>()))
             .ReturnsAsync((ScoreSession?)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => _service.CompleteSession(1));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CompleteSession(1));
     }
 
     [Fact]

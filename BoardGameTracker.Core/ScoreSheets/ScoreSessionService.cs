@@ -28,11 +28,7 @@ public class ScoreSessionService : IScoreSessionService
         if (session == null)
             throw new ArgumentNullException(nameof(session));
         
-        if (string.IsNullOrWhiteSpace(session.Name))
-            throw new ArgumentException("Session name is required", nameof(session));
-        
-        if (session.ScoreSheetTemplateId == 0)
-            throw new ArgumentException("ScoreSheetTemplateId is required", nameof(session));
+        ValidateSession(session);
         
         session.CreatedAt = DateTime.UtcNow;
         session.UpdatedAt = DateTime.UtcNow;
@@ -47,11 +43,7 @@ public class ScoreSessionService : IScoreSessionService
         if (session.Id == 0)
             throw new ArgumentException("Session Id is required for update", nameof(session));
         
-        if (string.IsNullOrWhiteSpace(session.Name))
-            throw new ArgumentException("Session name is required", nameof(session));
-        
-        if (session.ScoreSheetTemplateId == 0)
-            throw new ArgumentException("ScoreSheetTemplateId is required", nameof(session));
+        ValidateSession(session);
         
         session.UpdatedAt = DateTime.UtcNow;
         return await _repository.UpdateAsync(session);
@@ -67,7 +59,7 @@ public class ScoreSessionService : IScoreSessionService
         var session = await _repository.GetByIdAsync(id);
         if (session == null)
         {
-            throw new Exception("Session not found");
+            throw new InvalidOperationException($"Session with id {id} not found");
         }
 
         session.IsCompleted = true;
@@ -85,5 +77,14 @@ public class ScoreSessionService : IScoreSessionService
     public async Task<IEnumerable<ScoreSession>> GetSessionsByUser(string userId)
     {
         return await _repository.GetSessionsByUser(userId);
+    }
+
+    private void ValidateSession(ScoreSession session)
+    {
+        if (string.IsNullOrWhiteSpace(session.Name))
+            throw new ArgumentException("Session name is required", nameof(session));
+        
+        if (session.ScoreSheetTemplateId == 0)
+            throw new ArgumentException("ScoreSheetTemplateId is required", nameof(session));
     }
 }

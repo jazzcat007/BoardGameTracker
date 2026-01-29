@@ -191,4 +191,76 @@ public class ScoreSheetTemplateServiceTests
         // Assert
         result.UpdatedAt.Should().BeOnOrAfter(beforeUpdate);
     }
+
+    [Fact]
+    public async Task Update_Should_Throw_ArgumentException_When_Name_Is_Empty()
+    {
+        // Arrange
+        var template = new ScoreSheetTemplate
+        {
+            Id = 1,
+            Name = "",
+            JsonDefinition = "{}",
+            MinPlayers = 1,
+            MaxPlayers = 4
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _service.Update(template));
+        exception.Message.Should().Contain("name");
+    }
+
+    [Fact]
+    public async Task Update_Should_Throw_ArgumentException_When_JsonDefinition_Is_Empty()
+    {
+        // Arrange
+        var template = new ScoreSheetTemplate
+        {
+            Id = 1,
+            Name = "Test Template",
+            JsonDefinition = "",
+            MinPlayers = 1,
+            MaxPlayers = 4
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _service.Update(template));
+        exception.Message.Should().Contain("JSON definition");
+    }
+
+    [Fact]
+    public async Task Update_Should_Throw_ArgumentException_When_MinPlayers_Is_Less_Than_One()
+    {
+        // Arrange
+        var template = new ScoreSheetTemplate
+        {
+            Id = 1,
+            Name = "Test Template",
+            JsonDefinition = "{}",
+            MinPlayers = 0,
+            MaxPlayers = 4
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _service.Update(template));
+        exception.Message.Should().Contain("MinPlayers");
+    }
+
+    [Fact]
+    public async Task Update_Should_Throw_ArgumentException_When_MaxPlayers_Is_Less_Than_MinPlayers()
+    {
+        // Arrange
+        var template = new ScoreSheetTemplate
+        {
+            Id = 1,
+            Name = "Test Template",
+            JsonDefinition = "{}",
+            MinPlayers = 5,
+            MaxPlayers = 2
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _service.Update(template));
+        exception.Message.Should().Contain("MaxPlayers");
+    }
 }
