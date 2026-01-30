@@ -36,8 +36,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to retrieve all score sessions");
+            return StatusCode(500, new { error = "An error occurred while retrieving sessions" });
         }
     }
 
@@ -79,8 +79,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to create score session");
+            return StatusCode(500, new { error = "An error occurred while creating the session" });
         }
     }
 
@@ -101,8 +101,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to update score session with id {SessionId}", updateViewModel.Id);
+            return StatusCode(500, new { error = "An error occurred while updating the session" });
         }
     }
 
@@ -117,8 +117,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to delete score session with id {SessionId}", id);
+            return StatusCode(500, new { error = "An error occurred while deleting the session" });
         }
     }
 
@@ -134,8 +134,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to complete score session with id {SessionId}", id);
+            return StatusCode(500, new { error = "An error occurred while completing the session" });
         }
     }
 
@@ -151,8 +151,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to retrieve score sessions for game {GameId}", gameId);
+            return StatusCode(500, new { error = "An error occurred while retrieving sessions for the game" });
         }
     }
 
@@ -168,8 +168,8 @@ public class ScoreSessionController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to retrieve score sessions for user {UserId}", userId);
+            return StatusCode(500, new { error = "An error occurred while retrieving sessions for the user" });
         }
     }
 }

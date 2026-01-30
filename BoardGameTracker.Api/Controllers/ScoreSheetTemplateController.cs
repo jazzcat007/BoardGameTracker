@@ -36,8 +36,8 @@ public class ScoreSheetTemplateController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to retrieve all score sheet templates");
+            return StatusCode(500, new { error = "An error occurred while retrieving templates" });
         }
     }
 
@@ -57,8 +57,8 @@ public class ScoreSheetTemplateController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to retrieve score sheet template with id {TemplateId}", id);
+            return StatusCode(500, new { error = "An error occurred while retrieving the template" });
         }
     }
 
@@ -79,8 +79,8 @@ public class ScoreSheetTemplateController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to create score sheet template");
+            return StatusCode(500, new { error = "An error occurred while creating the template" });
         }
     }
 
@@ -101,8 +101,8 @@ public class ScoreSheetTemplateController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to update score sheet template with id {TemplateId}", updateViewModel.Id);
+            return StatusCode(500, new { error = "An error occurred while updating the template" });
         }
     }
 
@@ -117,8 +117,8 @@ public class ScoreSheetTemplateController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to delete score sheet template with id {TemplateId}", id);
+            return StatusCode(500, new { error = "An error occurred while deleting the template" });
         }
     }
 
@@ -134,8 +134,8 @@ public class ScoreSheetTemplateController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
+            _logger.LogError(e, "Failed to retrieve score sheet templates for game {GameId}", gameId);
+            return StatusCode(500, new { error = "An error occurred while retrieving templates for the game" });
         }
     }
 }
